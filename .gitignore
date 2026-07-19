@@ -1,0 +1,62 @@
+# ====================================================================
+# Compiled Binaries & Build Output
+# ====================================================================
+build/
+Build/
+x64/
+x86/
+[Dd]ebug/
+[Rr]elease/
+*.lib
+*.a
+*.la
+*.lo
+*.o
+*.obj
+*.out
+*.exe
+*.dll
+*.so
+*.dylib
+
+# ====================================================================
+# CMake Generated Artifacts
+# ====================================================================
+CMakeCache.txt
+CMakeFiles/
+CMakeScripts/
+Makefile
+cmake_install.cmake
+install_manifest.txt
+compile_commands.json
+
+# ====================================================================
+# vcpkg Package Manager Directories
+# ====================================================================
+vcpkg/
+vcpkg_installed/
+
+# ====================================================================
+# IDEs & Editor Specific Configs
+# ====================================================================
+# VS Code
+.vscode/*
+!.vscode/settings.json
+!.vscode/tasks.json
+!.vscode/launch.json
+!.vscode/extensions.json
+
+# Visual Studio (MSVC)
+.vs/
+*.user
+*.suo
+*.sln
+*.vcxproj
+*.filters
+
+# CLion / JetBrains
+.idea/
+
+# OS Generated Files
+.DS_Store
+Thumbs.db
