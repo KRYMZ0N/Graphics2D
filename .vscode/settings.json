@@ -1,5 +1,6 @@
 {
-    "cmake.configureSettings": {
-        "CMAKE_TOOLCHAIN_FILE": "C:/Users/KRYMZ0N05/vcpkg/scripts/buildsystems/vcpkg.cmake"
-    }
+  "cmake.configureSettings": {
+    "CMAKE_PREFIX_PATH": "/usr/local/opt/sdl2;/usr/local/opt/sdl2_image"
+  },
+  "C_CXX_INCLUDE_PATH": "/usr/local/opt/sdl2/include;/usr/local/opt/sdl2_image/include"
 }

@@ -3,19 +3,22 @@
 
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_image.h>
-#include <string>
+#include <cstdint>
 #include <iostream>
+#include <stdexcept>
+#include <string>
 
-// Forward declaration so Sprite classes know the Engine exists
 class GraphicsEngine;
 
-// 1. Sprite Class for single images
 class Sprite {
-friend class GraphicsEngine; // Allows Engine to access private texture
+friend class GraphicsEngine;
 public:
     Sprite(GraphicsEngine& engine, const std::string& filePath);
     ~Sprite();
+
     bool isLoaded() const { return texture != nullptr; }
+    int getWidth() const { return width; }
+    int getHeight() const { return height; }
 
 private:
     SDL_Texture* texture = nullptr;
@@ -23,13 +26,15 @@ private:
     int height = 0;
 };
 
-// 2. SpriteSheet Class for grid templates
 class SpriteSheet {
 friend class GraphicsEngine;
 public:
     SpriteSheet(GraphicsEngine& engine, const std::string& filePath, int frameW, int frameH);
     ~SpriteSheet();
+
     bool isLoaded() const { return texture != nullptr; }
+    int getFrameWidth() const { return frameWidth; }
+    int getFrameHeight() const { return frameHeight; }
 
 private:
     SDL_Texture* texture = nullptr;
@@ -37,27 +42,41 @@ private:
     int frameHeight = 0;
 };
 
-// 3. Core Graphics Engine
 class GraphicsEngine {
 public:
     GraphicsEngine(const std::string& title, int width, int height);
     ~GraphicsEngine();
 
-    void clear(uint8_t r, uint8_t g, uint8_t b);
+    void clear(uint8_t r, uint8_t g, uint8_t b, uint8_t a = 255);
     void present();
-    
-    // Draw a single picture
-    void drawSprite(const Sprite& sprite, int x, int y, int scale = 1);
-    
-    // Draw a template frame from a sheet
-    void drawSpriteFrame(const SpriteSheet& sheet, int frameX, int frameY, int screenX, int screenY, int scale = 1);
 
-    // Helper for loading textures inside Sprite classes
+    void setCamera(int x, int y);
+
+    // Draw a single image in world space with optional horizontal flip.
+    void drawSprite(const Sprite& sprite, int x, int y, int scale = 1, bool flipX = false);
+
+    // Draw one frame from a sprite sheet.
+    void drawSpriteFrame(const SpriteSheet& sheet, int frameX, int frameY, int screenX, int screenY, int scale = 1, bool flipX = false);
+
+    // Simple geometric primitives for UI and debug overlays.
+    void drawRectangle(int x, int y, int w, int h, uint8_t r, uint8_t g, uint8_t b, uint8_t a = 255);
+    void fillRectangle(int x, int y, int w, int h, uint8_t r, uint8_t g, uint8_t b, uint8_t a = 255);
+    void drawLine(int x1, int y1, int x2, int y2, uint8_t r, uint8_t g, uint8_t b, uint8_t a = 255);
+
+    int getWidth() const { return windowWidth; }
+    int getHeight() const { return windowHeight; }
+    SDL_Renderer* getRenderer() const { return renderer; }
+
+    // Helper for loading textures inside Sprite classes.
     SDL_Texture* loadTexture(const std::string& filePath, int& outW, int& outH);
 
 private:
     SDL_Window* window = nullptr;
     SDL_Renderer* renderer = nullptr;
+    int windowWidth = 0;
+    int windowHeight = 0;
+    int cameraX = 0;
+    int cameraY = 0;
 };
 
 #endif

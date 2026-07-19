@@ -1,32 +1,43 @@
-cmake_minimum_required(VERSION 3.12)
+cmake_minimum_required(VERSION 3.16)
 project(PixelGraphicsLibrary LANGUAGES CXX)
 
-# Force C++17 standard
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
+set(CMAKE_CXX_EXTENSIONS OFF)
 
-# 1. Find Dependencies (SDL2 and SDL2_image)
-find_package(SDL2 REQUIRED)
-find_package(SDL2_image REQUIRED)
+# Make Homebrew-installed SDL packages discoverable on macOS.
+list(APPEND CMAKE_PREFIX_PATH
+    "/usr/local/opt/sdl2"
+    "/usr/local/opt/sdl2_image"
+)
 
-# 2. Automatically find your library source files inside the src folder
-file(GLOB_RECURSE LIB_SOURCES 
-    "src/*.cpp" 
+# Resolve SDL2 and SDL2_image as reusable dependencies.
+find_package(SDL2 CONFIG REQUIRED)
+find_package(SDL2_image CONFIG REQUIRED)
+
+file(GLOB_RECURSE LIB_SOURCES CONFIGURE_DEPENDS
+    "src/*.cpp"
+)
+
+file(GLOB_RECURSE LIB_HEADERS CONFIGURE_DEPENDS
     "src/*.h"
 )
 
-# 3. Define this project as a reusable STATIC LIBRARY (not an app)
-add_library(PixelGraphics STATIC ${LIB_SOURCES})
+add_library(PixelGraphics STATIC ${LIB_SOURCES} ${LIB_HEADERS})
 
-# 4. Include Directories
-target_include_directories(PixelGraphics PUBLIC 
-    ${SDL2_INCLUDE_DIRS}
-    ${SDL2_IMAGE_INCLUDE_DIRS}
-    ${CMAKE_CURRENT_SOURCE_DIR}/src
+target_include_directories(PixelGraphics
+    PUBLIC
+        $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/src>
+        $<INSTALL_INTERFACE:include>
 )
 
-# 5. Link Libraries
-target_link_libraries(PixelGraphics PUBLIC 
-    ${SDL2_LIBRARIES} 
-    ${SDL2_IMAGE_LIBRARIES}
+target_link_libraries(PixelGraphics
+    PUBLIC
+        SDL2::SDL2
+        SDL2_image::SDL2_image
+)
+
+set_target_properties(PixelGraphics PROPERTIES
+    EXPORT_NAME PixelGraphics
+    POSITION_INDEPENDENT_CODE ON
 )
