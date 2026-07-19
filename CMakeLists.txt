@@ -5,10 +5,12 @@ set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
 
-# Make Homebrew-installed SDL packages discoverable on macOS.
+# ALlow other architectures to use
 list(APPEND CMAKE_PREFIX_PATH
     "/usr/local/opt/sdl2"
     "/usr/local/opt/sdl2_image"
+    "/opt/homebrew/opt/sdl2"
+    "/opt/homebrew/opt/sdl2_image"
 )
 
 # Resolve SDL2 and SDL2_image as reusable dependencies.

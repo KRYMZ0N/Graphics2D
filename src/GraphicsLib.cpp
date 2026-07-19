@@ -38,6 +38,12 @@ GraphicsEngine::GraphicsEngine(const std::string& title, int width, int height)
 }
 
 GraphicsEngine::~GraphicsEngine() {
+    // Cleanup any lingering textures before destroying the renderer
+    for (auto& pair : textureCache) {
+        SDL_DestroyTexture(pair.second.texture);
+    }
+    textureCache.clear();
+
     if (renderer) {
         SDL_DestroyRenderer(renderer);
     }
@@ -48,7 +54,14 @@ GraphicsEngine::~GraphicsEngine() {
     SDL_Quit();
 }
 
-SDL_Texture* GraphicsEngine::loadTexture(const std::string& filePath, int& outW, int& outH) {
+SDL_Texture* GraphicsEngine::acquireTexture(const std::string& filePath, int& outW, int& outH) {
+    auto it = textureCache.find(filePath);
+    if (it != textureCache.end()) {
+        it->second.refCount++;
+        SDL_QueryTexture(it->second.texture, nullptr, nullptr, &outW, &outH);
+        return it->second.texture;
+    }
+
     SDL_Texture* texture = IMG_LoadTexture(renderer, filePath.c_str());
     if (!texture) {
         std::cerr << "Failed to load texture '" << filePath << "': " << IMG_GetError() << std::endl;
@@ -59,7 +72,20 @@ SDL_Texture* GraphicsEngine::loadTexture(const std::string& filePath, int& outW,
 
     SDL_SetTextureScaleMode(texture, SDL_ScaleModeNearest);
     SDL_QueryTexture(texture, nullptr, nullptr, &outW, &outH);
+
+    textureCache[filePath] = { texture, 1 };
     return texture;
+}
+
+void GraphicsEngine::releaseTexture(const std::string& filePath) {
+    auto it = textureCache.find(filePath);
+    if (it != textureCache.end()) {
+        it->second.refCount--;
+        if (it->second.refCount <= 0) {
+            SDL_DestroyTexture(it->second.texture);
+            textureCache.erase(it);
+        }
+    }
 }
 
 void GraphicsEngine::clear(uint8_t r, uint8_t g, uint8_t b, uint8_t a) {
@@ -77,9 +103,7 @@ void GraphicsEngine::setCamera(int x, int y) {
 }
 
 void GraphicsEngine::drawSprite(const Sprite& sprite, int x, int y, int scale, bool flipX) {
-    if (!sprite.texture) {
-        return;
-    }
+    if (!sprite.texture) return;
 
     SDL_Rect destRect = {
         x - cameraX,
@@ -88,20 +112,11 @@ void GraphicsEngine::drawSprite(const Sprite& sprite, int x, int y, int scale, b
         sprite.height * scale
     };
 
-    SDL_RenderCopyEx(
-        renderer,
-        sprite.texture,
-        nullptr,
-        &destRect,
-        0.0,
-        nullptr,
-        flipX ? SDL_FLIP_HORIZONTAL : SDL_FLIP_NONE);
+    SDL_RenderCopyEx(renderer, sprite.texture, nullptr, &destRect, 0.0, nullptr, flipX ? SDL_FLIP_HORIZONTAL : SDL_FLIP_NONE);
 }
 
 void GraphicsEngine::drawSpriteFrame(const SpriteSheet& sheet, int frameX, int frameY, int screenX, int screenY, int scale, bool flipX) {
-    if (!sheet.texture) {
-        return;
-    }
+    if (!sheet.texture) return;
 
     SDL_Rect srcRect = {
         frameX * sheet.frameWidth,
@@ -117,52 +132,54 @@ void GraphicsEngine::drawSpriteFrame(const SpriteSheet& sheet, int frameX, int f
         sheet.frameHeight * scale
     };
 
-    SDL_RenderCopyEx(
-        renderer,
-        sheet.texture,
-        &srcRect,
-        &destRect,
-        0.0,
-        nullptr,
-        flipX ? SDL_FLIP_HORIZONTAL : SDL_FLIP_NONE);
+    SDL_RenderCopyEx(renderer, sheet.texture, &srcRect, &destRect, 0.0, nullptr, flipX ? SDL_FLIP_HORIZONTAL : SDL_FLIP_NONE);
 }
 
-void GraphicsEngine::drawRectangle(int x, int y, int w, int h, uint8_t r, uint8_t g, uint8_t b, uint8_t a) {
-    SDL_Rect rect = { x - cameraX, y - cameraY, w, h };
+void GraphicsEngine::drawRectangle(int x, int y, int w, int h, uint8_t r, uint8_t g, uint8_t b, uint8_t a, bool isWorldSpace) {
+    int renderX = isWorldSpace ? (x - cameraX) : x;
+    int renderY = isWorldSpace ? (y - cameraY) : y;
+    SDL_Rect rect = { renderX, renderY, w, h };
     SDL_SetRenderDrawColor(renderer, r, g, b, a);
     SDL_RenderDrawRect(renderer, &rect);
 }
 
-void GraphicsEngine::fillRectangle(int x, int y, int w, int h, uint8_t r, uint8_t g, uint8_t b, uint8_t a) {
-    SDL_Rect rect = { x - cameraX, y - cameraY, w, h };
+void GraphicsEngine::fillRectangle(int x, int y, int w, int h, uint8_t r, uint8_t g, uint8_t b, uint8_t a, bool isWorldSpace) {
+    int renderX = isWorldSpace ? (x - cameraX) : x;
+    int renderY = isWorldSpace ? (y - cameraY) : y;
+    SDL_Rect rect = { renderX, renderY, w, h };
     SDL_SetRenderDrawColor(renderer, r, g, b, a);
     SDL_RenderFillRect(renderer, &rect);
 }
 
-void GraphicsEngine::drawLine(int x1, int y1, int x2, int y2, uint8_t r, uint8_t g, uint8_t b, uint8_t a) {
+void GraphicsEngine::drawLine(int x1, int y1, int x2, int y2, uint8_t r, uint8_t g, uint8_t b, uint8_t a, bool isWorldSpace) {
+    int rX1 = isWorldSpace ? (x1 - cameraX) : x1;
+    int rY1 = isWorldSpace ? (y1 - cameraY) : y1;
+    int rX2 = isWorldSpace ? (x2 - cameraX) : x2;
+    int rY2 = isWorldSpace ? (y2 - cameraY) : y2;
     SDL_SetRenderDrawColor(renderer, r, g, b, a);
-    SDL_RenderDrawLine(renderer, x1 - cameraX, y1 - cameraY, x2 - cameraX, y2 - cameraY);
+    SDL_RenderDrawLine(renderer, rX1, rY1, rX2, rY2);
 }
 
-Sprite::Sprite(GraphicsEngine& engine, const std::string& filePath) {
-    texture = engine.loadTexture(filePath, width, height);
+Sprite::Sprite(GraphicsEngine& engine, const std::string& filePath) 
+    : engine(&engine), filePath(filePath) {
+    texture = engine.acquireTexture(filePath, width, height);
 }
 
 Sprite::~Sprite() {
-    if (texture) {
-        SDL_DestroyTexture(texture);
+    if (engine && !filePath.empty()) {
+        engine->releaseTexture(filePath);
     }
 }
 
 SpriteSheet::SpriteSheet(GraphicsEngine& engine, const std::string& filePath, int frameW, int frameH)
-    : frameWidth(frameW), frameHeight(frameH) {
+    : engine(&engine), filePath(filePath), frameWidth(frameW), frameHeight(frameH) {
     int totalW = 0;
     int totalH = 0;
-    texture = engine.loadTexture(filePath, totalW, totalH);
+    texture = engine.acquireTexture(filePath, totalW, totalH);
 }
 
 SpriteSheet::~SpriteSheet() {
-    if (texture) {
-        SDL_DestroyTexture(texture);
+    if (engine && !filePath.empty()) {
+        engine->releaseTexture(filePath);
     }
 }

@@ -7,6 +7,7 @@
 #include <iostream>
 #include <stdexcept>
 #include <string>
+#include <unordered_map>
 
 class GraphicsEngine;
 
@@ -21,6 +22,8 @@ public:
     int getHeight() const { return height; }
 
 private:
+    GraphicsEngine* engine = nullptr;
+    std::string filePath;
     SDL_Texture* texture = nullptr;
     int width = 0;
     int height = 0;
@@ -37,12 +40,16 @@ public:
     int getFrameHeight() const { return frameHeight; }
 
 private:
+    GraphicsEngine* engine = nullptr;
+    std::string filePath;
     SDL_Texture* texture = nullptr;
     int frameWidth = 0;
     int frameHeight = 0;
 };
 
 class GraphicsEngine {
+friend class Sprite;
+friend class SpriteSheet;
 public:
     GraphicsEngine(const std::string& title, int width, int height);
     ~GraphicsEngine();
@@ -59,24 +66,33 @@ public:
     void drawSpriteFrame(const SpriteSheet& sheet, int frameX, int frameY, int screenX, int screenY, int scale = 1, bool flipX = false);
 
     // Simple geometric primitives for UI and debug overlays.
-    void drawRectangle(int x, int y, int w, int h, uint8_t r, uint8_t g, uint8_t b, uint8_t a = 255);
-    void fillRectangle(int x, int y, int w, int h, uint8_t r, uint8_t g, uint8_t b, uint8_t a = 255);
-    void drawLine(int x1, int y1, int x2, int y2, uint8_t r, uint8_t g, uint8_t b, uint8_t a = 255);
+    // Check these lines in GraphicsLib.h:
+    void drawRectangle(int x, int y, int w, int h, uint8_t r, uint8_t g, uint8_t b, uint8_t a = 255, bool isWorldSpace = true);
+    void fillRectangle(int x, int y, int w, int h, uint8_t r, uint8_t g, uint8_t b, uint8_t a = 255, bool isWorldSpace = true); // <-- Ensure this has it!
+    void drawLine(int x1, int y1, int x2, int y2, uint8_t r, uint8_t g, uint8_t b, uint8_t a = 255, bool isWorldSpace = true);
 
     int getWidth() const { return windowWidth; }
     int getHeight() const { return windowHeight; }
     SDL_Renderer* getRenderer() const { return renderer; }
 
-    // Helper for loading textures inside Sprite classes.
-    SDL_Texture* loadTexture(const std::string& filePath, int& outW, int& outH);
 
 private:
+    // Internal texture management logic
+    SDL_Texture* acquireTexture(const std::string& filePath, int& outW, int& outH);
+    void releaseTexture(const std::string& filePath);
+
     SDL_Window* window = nullptr;
     SDL_Renderer* renderer = nullptr;
     int windowWidth = 0;
     int windowHeight = 0;
     int cameraX = 0;
     int cameraY = 0;
+
+    struct CachedTexture {
+        SDL_Texture* texture;
+        int refCount;
+    };
+    std::unordered_map<std::string, CachedTexture> textureCache;
 };
 
 #endif
