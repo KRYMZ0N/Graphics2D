@@ -172,9 +172,9 @@ void GraphicsEngine::drawLine(int x1, int y1, int x2, int y2, uint8_t r, uint8_t
     SDL_RenderDrawLine(renderer, rX1, rY1, rX2, rY2);
 }
 
-Sprite::Sprite(GraphicsEngine& engine, const std::string& filePath) 
-    : engine(&engine), filePath(filePath) {
-    texture = engine.acquireTexture(filePath, width, height);
+Sprite::Sprite(GraphicsEngine& eng, const std::string& path) 
+    : engine(&eng), filePath(path) {
+    texture = engine->acquireTexture(filePath, width, height);
 }
 
 Sprite::~Sprite() {
@@ -183,11 +183,11 @@ Sprite::~Sprite() {
     }
 }
 
-SpriteSheet::SpriteSheet(GraphicsEngine& engine, const std::string& filePath, int frameW, int frameH)
-    : engine(&engine), filePath(filePath), frameWidth(frameW), frameHeight(frameH) {
+SpriteSheet::SpriteSheet(GraphicsEngine& eng, const std::string& path, int frameW, int frameH)
+    : engine(&eng), filePath(path), frameWidth(frameW), frameHeight(frameH) {
     int totalW = 0;
     int totalH = 0;
-    texture = engine.acquireTexture(filePath, totalW, totalH);
+    texture = engine->acquireTexture(filePath, totalW, totalH);
 }
 
 SpriteSheet::~SpriteSheet() {

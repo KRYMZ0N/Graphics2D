@@ -26,6 +26,7 @@ file(GLOB_RECURSE LIB_HEADERS CONFIGURE_DEPENDS
 )
 
 add_library(PixelGraphics SHARED ${LIB_SOURCES} ${LIB_HEADERS})
+target_compile_definitions(PixelGraphics PRIVATE PIXEL_GRAPHICS_EXPORTS)
 
 target_include_directories(PixelGraphics
     PUBLIC

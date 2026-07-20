@@ -24,7 +24,7 @@ struct SDL_Texture;
 
 class GraphicsEngine;
 
-class Sprite {
+class PIXEL_API Sprite {
 friend class GraphicsEngine;
 public:
     Sprite(GraphicsEngine& engine, const std::string& filePath);
@@ -42,7 +42,7 @@ private:
     int height = 0;
 };
 
-class SpriteSheet {
+class PIXEL_API SpriteSheet {
 friend class GraphicsEngine;
 public:
     SpriteSheet(GraphicsEngine& engine, const std::string& filePath, int frameW, int frameH);
@@ -60,7 +60,7 @@ private:
     int frameHeight = 0;
 };
 
-class GraphicsEngine {
+class PIXEL_API GraphicsEngine {
 friend class Sprite;
 friend class SpriteSheet;
 public:
