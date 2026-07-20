@@ -1,4 +1,6 @@
 #include "GraphicsLib.h"
+#include <SDL2/SDL.h>       // Include SDL here, completely hidden from the game!
+#include <SDL2/SDL_image.h>
 
 GraphicsEngine::GraphicsEngine(const std::string& title, int width, int height)
     : windowWidth(width), windowHeight(height) {
@@ -75,6 +77,16 @@ SDL_Texture* GraphicsEngine::acquireTexture(const std::string& filePath, int& ou
 
     textureCache[filePath] = { texture, 1 };
     return texture;
+}
+
+bool GraphicsEngine::processInput() {
+    SDL_Event event;
+    while (SDL_PollEvent(&event)) {
+        if (event.type == SDL_QUIT) {
+            return false; // Tell the game loop to stop running
+        }
+    }
+    return true; // Keep running
 }
 
 void GraphicsEngine::releaseTexture(const std::string& filePath) {

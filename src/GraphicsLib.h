@@ -1,13 +1,26 @@
 #ifndef GRAPHICS_LIB_H
 #define GRAPHICS_LIB_H
 
-#include <SDL2/SDL.h>
-#include <SDL2/SDL_image.h>
+// Windows DLL Import/Export Macro Setup
+#if defined(_WIN32) || defined(_WIN64)
+    #ifdef PIXEL_GRAPHICS_EXPORTS
+        #define PIXEL_API __declspec(dllexport)
+    #else
+        #define PIXEL_API __declspec(dllimport)
+    #endif
+#else
+    #define PIXEL_API
+#endif
+
 #include <cstdint>
 #include <iostream>
 #include <stdexcept>
 #include <string>
 #include <unordered_map>
+
+struct SDL_Window;
+struct SDL_Renderer;
+struct SDL_Texture;
 
 class GraphicsEngine;
 
@@ -53,6 +66,7 @@ friend class SpriteSheet;
 public:
     GraphicsEngine(const std::string& title, int width, int height);
     ~GraphicsEngine();
+    bool processInput();
 
     void clear(uint8_t r, uint8_t g, uint8_t b, uint8_t a = 255);
     void present();
