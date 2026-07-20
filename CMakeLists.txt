@@ -25,7 +25,7 @@ file(GLOB_RECURSE LIB_HEADERS CONFIGURE_DEPENDS
     "src/*.h"
 )
 
-add_library(PixelGraphics STATIC ${LIB_SOURCES} ${LIB_HEADERS})
+add_library(PixelGraphics SHARED ${LIB_SOURCES} ${LIB_HEADERS})
 
 target_include_directories(PixelGraphics
     PUBLIC
