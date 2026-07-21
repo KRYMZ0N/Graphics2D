@@ -100,7 +100,33 @@ bool GraphicsEngine::isKeyDown(char key) {
     if (key == 'A' || key == 'a') return state[SDL_SCANCODE_A];
     if (key == 'S' || key == 's') return state[SDL_SCANCODE_S];
     if (key == 'D' || key == 'd') return state[SDL_SCANCODE_D];
+    if (key == 'E' || key == 'e') return state[SDL_SCANCODE_E];
+    if (key == 'Q' || key == 'q') return state[SDL_SCANCODE_Q];
+    if (key == 'F' || key == 'f') return state[SDL_SCANCODE_F];
+    if (key == 'R' || key == 'r') return state[SDL_SCANCODE_R];
+    
+    // Fixed: 'L' is now just the physical letter L key on the keyboard
+    if (key == 'L' || key == 'l') return state[SDL_SCANCODE_L]; 
+    
+    if (key == ' ')               return state[SDL_SCANCODE_SPACE];
+    
+    // Use a special identifier or keep Shift completely separate
     return false;
+}
+
+// Check Mouse Buttons (1 for MB1, 3 for MB2)
+bool GraphicsEngine::isMouseButtonDown(int button) {
+    int x, y;
+    Uint32 buttons = SDL_GetMouseState(&x, &y);
+    if (button == 1) return (buttons & SDL_BUTTON(SDL_BUTTON_LEFT)) != 0;   // MB1
+    if (button == 2) return (buttons & SDL_BUTTON(SDL_BUTTON_MIDDLE)) != 0; // Middle
+    if (button == 3) return (buttons & SDL_BUTTON(SDL_BUTTON_RIGHT)) != 0;  // Right (MB2)
+    return false;
+}
+
+// Get Screen Mouse Coordinates (automatically accounts for camera offset if you want world space later)
+void GraphicsEngine::getMousePosition(int& mouseX, int& mouseY) const {
+    SDL_GetMouseState(&mouseX, &mouseY);
 }
 
 // Frame rate delay

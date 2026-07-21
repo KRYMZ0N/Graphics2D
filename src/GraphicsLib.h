@@ -70,6 +70,11 @@ public:
 
     bool processEvents(); // Returns false if the window is closed
     bool isKeyDown(char key);
+
+    // New Mouse Input Functions
+    bool isMouseButtonDown(int button); // 1 = Left (MB1), 2 = Middle, 3 = Right (MB2)
+    void getMousePosition(int& mouseX, int& mouseY) const;
+    
     void delay(int ms);
 
     void clear(uint8_t r, uint8_t g, uint8_t b, uint8_t a = 255);
