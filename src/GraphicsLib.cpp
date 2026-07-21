@@ -18,39 +18,44 @@ struct GraphicsEngine::Impl {
 };
 
 GraphicsEngine::GraphicsEngine(const std::string& title, int width, int height) {
+    std::cout << "[DEBUG] Allocating engine memory...\n";
     pImpl = new Impl();
     pImpl->windowWidth = width;
     pImpl->windowHeight = height;
 
+    std::cout << "[DEBUG] About to call SDL_Init...\n";
     if (SDL_Init(SDL_INIT_VIDEO) != 0) {
-        throw std::runtime_error(std::string("Failed to initialize SDL: ") + SDL_GetError());
+        std::cerr << "\n[CRITICAL SDL ERROR] SDL_Init failed: " << SDL_GetError() << "\n";
+        exit(1); // Force print and exit safely
     }
 
+    std::cout << "[DEBUG] About to call IMG_Init...\n";
     int imgFlags = IMG_Init(IMG_INIT_PNG);
     if ((imgFlags & IMG_INIT_PNG) == 0) {
-        SDL_Quit();
-        throw std::runtime_error(std::string("Failed to initialize SDL_image: ") + IMG_GetError());
+        std::cerr << "\n[CRITICAL IMG ERROR] IMG_Init failed: " << IMG_GetError() << "\n";
+        exit(1);
     }
 
+    std::cout << "[DEBUG] About to create SDL_Window...\n";
     pImpl->window = SDL_CreateWindow(title.c_str(), SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, width, height, SDL_WINDOW_SHOWN);
     if (!pImpl->window) {
-        std::string err = SDL_GetError();
-        IMG_Quit();
-        SDL_Quit();
-        throw std::runtime_error("Failed to create SDL window: " + err);
+        std::cerr << "\n[CRITICAL WINDOW ERROR] SDL_CreateWindow failed: " << SDL_GetError() << "\n";
+        exit(1);
     }
 
+    std::cout << "[DEBUG] About to create SDL_Renderer...\n";
     pImpl->renderer = SDL_CreateRenderer(pImpl->window, -1, SDL_RENDERER_ACCELERATED);
     if (!pImpl->renderer) {
+        std::cout << "[DEBUG] Accelerated renderer failed, trying software fallback...\n";
         pImpl->renderer = SDL_CreateRenderer(pImpl->window, -1, SDL_RENDERER_SOFTWARE);
     }
     
     if (!pImpl->renderer) {
-        SDL_DestroyWindow(pImpl->window);
-        IMG_Quit();
-        SDL_Quit();
-        throw std::runtime_error(std::string("Failed to create SDL renderer: ") + SDL_GetError());
+        std::cerr << "\n[CRITICAL RENDERER ERROR] SDL_CreateRenderer failed: " << SDL_GetError() << "\n";
+        exit(1);
     }
+
+    std::cout << "[DEBUG] GraphicsEngine fully initialized!\n";
 }
 
 // 3. Clean up pImpl in the destructor
@@ -129,6 +134,14 @@ void GraphicsEngine::drawSprite(const Sprite& sprite, int x, int y, int scale, b
     if (!sprite.texture) return;
     SDL_Rect destRect = { x - pImpl->cameraX, y - pImpl->cameraY, sprite.width * scale, sprite.height * scale };
     SDL_RenderCopyEx(pImpl->renderer, sprite.texture, nullptr, &destRect, 0.0, nullptr, flipX ? SDL_FLIP_HORIZONTAL : SDL_FLIP_NONE);
+}
+
+void GraphicsEngine::fillRectangle(int x, int y, int w, int h, uint8_t r, uint8_t g, uint8_t b, uint8_t a, bool isWorldSpace) {
+    int renderX = isWorldSpace ? (x - pImpl->cameraX) : x;
+    int renderY = isWorldSpace ? (y - pImpl->cameraY) : y;
+    SDL_Rect rect = { renderX, renderY, w, h };
+    SDL_SetRenderDrawColor(pImpl->renderer, r, g, b, a);
+    SDL_RenderFillRect(pImpl->renderer, &rect);
 }
 
 Sprite::Sprite(GraphicsEngine& eng, const std::string& path) 

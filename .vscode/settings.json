@@ -1,6 +1,0 @@
-{
-  "cmake.configureSettings": {
-    "CMAKE_PREFIX_PATH": "/usr/local/opt/sdl2;/usr/local/opt/sdl2_image"
-  },
-  "C_CXX_INCLUDE_PATH": "/usr/local/opt/sdl2/include;/usr/local/opt/sdl2_image/include"
-}
