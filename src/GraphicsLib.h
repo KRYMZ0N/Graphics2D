@@ -70,43 +70,26 @@ public:
 
     void clear(uint8_t r, uint8_t g, uint8_t b, uint8_t a = 255);
     void present();
-
     void setCamera(int x, int y);
 
-    // Draw a single image in world space with optional horizontal flip.
     void drawSprite(const Sprite& sprite, int x, int y, int scale = 1, bool flipX = false);
-
-    // Draw one frame from a sprite sheet.
     void drawSpriteFrame(const SpriteSheet& sheet, int frameX, int frameY, int screenX, int screenY, int scale = 1, bool flipX = false);
 
-    // Simple geometric primitives for UI and debug overlays.
-    // Check these lines in GraphicsLib.h:
     void drawRectangle(int x, int y, int w, int h, uint8_t r, uint8_t g, uint8_t b, uint8_t a = 255, bool isWorldSpace = true);
-    void fillRectangle(int x, int y, int w, int h, uint8_t r, uint8_t g, uint8_t b, uint8_t a = 255, bool isWorldSpace = true); // <-- Ensure this has it!
+    void fillRectangle(int x, int y, int w, int h, uint8_t r, uint8_t g, uint8_t b, uint8_t a = 255, bool isWorldSpace = true);
     void drawLine(int x1, int y1, int x2, int y2, uint8_t r, uint8_t g, uint8_t b, uint8_t a = 255, bool isWorldSpace = true);
 
-    int getWidth() const { return windowWidth; }
-    int getHeight() const { return windowHeight; }
-    SDL_Renderer* getRenderer() const { return renderer; }
-
+    int getWidth() const;
+    int getHeight() const;
+    SDL_Renderer* getRenderer() const;
 
 private:
-    // Internal texture management logic
     SDL_Texture* acquireTexture(const std::string& filePath, int& outW, int& outH);
     void releaseTexture(const std::string& filePath);
 
-    SDL_Window* window = nullptr;
-    SDL_Renderer* renderer = nullptr;
-    int windowWidth = 0;
-    int windowHeight = 0;
-    int cameraX = 0;
-    int cameraY = 0;
-
-    struct CachedTexture {
-        SDL_Texture* texture;
-        int refCount;
-    };
-    std::unordered_map<std::string, CachedTexture> textureCache;
+    // PImpl Idiom: Hide all memory layout details from the executable!
+    struct Impl;
+    Impl* pImpl;
 };
 
 #endif
