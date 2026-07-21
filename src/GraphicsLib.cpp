@@ -82,6 +82,32 @@ bool GraphicsEngine::processInput() {
     return true;
 }
 
+// Returns true to keep running, false if the X button is clicked
+bool GraphicsEngine::processEvents() {
+    SDL_Event event;
+    while (SDL_PollEvent(&event)) {
+        if (event.type == SDL_QUIT) {
+            return false;
+        }
+    }
+    return true;
+}
+
+// Checks raw keyboard state for smooth movement
+bool GraphicsEngine::isKeyDown(char key) {
+    const Uint8* state = SDL_GetKeyboardState(NULL);
+    if (key == 'W' || key == 'w') return state[SDL_SCANCODE_W];
+    if (key == 'A' || key == 'a') return state[SDL_SCANCODE_A];
+    if (key == 'S' || key == 's') return state[SDL_SCANCODE_S];
+    if (key == 'D' || key == 'd') return state[SDL_SCANCODE_D];
+    return false;
+}
+
+// Frame rate delay
+void GraphicsEngine::delay(int ms) {
+    SDL_Delay(ms);
+}
+
 void GraphicsEngine::clear(uint8_t r, uint8_t g, uint8_t b, uint8_t a) {
     SDL_SetRenderDrawColor(pImpl->renderer, r, g, b, a);
     SDL_RenderClear(pImpl->renderer);

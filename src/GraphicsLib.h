@@ -68,6 +68,10 @@ public:
     ~GraphicsEngine();
     bool processInput();
 
+    bool processEvents(); // Returns false if the window is closed
+    bool isKeyDown(char key);
+    void delay(int ms);
+
     void clear(uint8_t r, uint8_t g, uint8_t b, uint8_t a = 255);
     void present();
     void setCamera(int x, int y);
