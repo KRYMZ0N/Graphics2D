@@ -9,7 +9,12 @@ set(CMAKE_CXX_EXTENSIONS OFF)
 file(GLOB_RECURSE LIB_SOURCES CONFIGURE_DEPENDS "src/*.cpp")
 file(GLOB_RECURSE LIB_HEADERS CONFIGURE_DEPENDS "src/*.h")
 
-add_library(PixelGraphics SHARED ${LIB_SOURCES} ${LIB_HEADERS})
+# Example CMake configuration for your graphics library target
+# Use the automatic file GLOB variable so any new .cpp file you add is picked up instantly!
+add_library(PixelGraphics SHARED
+    ${LIB_SOURCES}
+    ${LIB_HEADERS}
+)
 target_compile_definitions(PixelGraphics PRIVATE PIXEL_GRAPHICS_EXPORTS)
 
 # 2. Include directories
