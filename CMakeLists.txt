@@ -31,6 +31,7 @@ target_link_libraries(PixelGraphics
         "C:/Users/KRYMZ0N05/Documents/Undergrad/modernity/Engine2D/external/PixelGraphics/lib/PixelGraphics.lib"
         "C:/Users/KRYMZ0N05/Documents/Undergrad/modernity/Engine2D/external/PixelGraphics/lib/SDL2.lib"
         "C:/Users/KRYMZ0N05/Documents/Undergrad/modernity/Engine2D/external/PixelGraphics/lib/SDL2_image.lib"
+        "C:/Users/KRYMZ0N05/Documents/Undergrad/modernity/Engine2D/external/PixelGraphics/lib/SDL2_ttf.lib"
 )
 # 3. Manually link your library against your Engine2D external lib folder paths or local SDL paths
 # (Update this path to point to your actual SDL2 include directory if your compiler can't find SDL.h)

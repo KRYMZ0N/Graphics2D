@@ -1,10 +1,12 @@
 #include "GraphicsLib.h"
 #include <SDL2/SDL.h>       // Include SDL here, completely hidden from the game!
 #include <SDL2/SDL_image.h>
+#include <SDL2/SDL_ttf.h> // Add this near your other SDL includes
 
 struct GraphicsEngine::Impl {
     SDL_Window* window = nullptr;
     SDL_Renderer* renderer = nullptr;
+    TTF_Font* font = nullptr;
     int windowWidth = 0;
     int windowHeight = 0;
     int cameraX = 0;
@@ -32,6 +34,18 @@ GraphicsEngine::GraphicsEngine(const std::string& title, int width, int height) 
     if ((imgFlags & IMG_INIT_PNG) == 0) {
         std::cerr << "\n[CRITICAL IMG ERROR] IMG_Init failed: " << IMG_GetError() << "\n";
         exit(1);
+    }
+
+    // Initialize SDL_ttf
+    if (TTF_Init() == -1) {
+        std::cerr << "\n[CRITICAL TTF ERROR] TTF_Init failed: " << TTF_GetError() << "\n";
+        exit(1);
+    }
+
+    // Load your font (You will need a .ttf file in your assets folder!)
+    pImpl->font = TTF_OpenFont("assets/font.ttf", 24); // 24 is the font size
+    if (!pImpl->font) {
+        std::cout << "[WARNING] Failed to load font.ttf! Text will not render.\n";
     }
 
 
@@ -62,6 +76,11 @@ GraphicsEngine::~GraphicsEngine() {
 
     if (pImpl->renderer) SDL_DestroyRenderer(pImpl->renderer);
     if (pImpl->window) SDL_DestroyWindow(pImpl->window);
+
+    if (pImpl->font) {
+        TTF_CloseFont(pImpl->font);
+    }
+    TTF_Quit();
     
     IMG_Quit();
     SDL_Quit();
@@ -197,4 +216,28 @@ void GraphicsEngine::drawSpriteFrame(const SpriteSheet& sheet, int frameX, int f
 
     // 3. Render the specific frame slice with optional horizontal flipping
     SDL_RenderCopyEx(pImpl->renderer, sheet.texture, &srcRect, &destRect, 0.0, nullptr, flipX ? SDL_FLIP_HORIZONTAL : SDL_FLIP_NONE);
+}
+
+void GraphicsEngine::drawText(const std::string& text, int x, int y, uint8_t r, uint8_t g, uint8_t b) {
+    if (!pImpl->font || text.empty()) return;
+
+    SDL_Color color = { r, g, b, 255 };
+    
+    // 1. Create a pixel surface from the string
+    SDL_Surface* surface = TTF_RenderText_Solid(pImpl->font, text.c_str(), color);
+    if (!surface) return;
+
+    // 2. Convert to a hardware texture
+    SDL_Texture* texture = SDL_CreateTextureFromSurface(pImpl->renderer, surface);
+    if (texture) {
+        // 3. Define where it goes and draw it
+        SDL_Rect destRect = { x, y, surface->w, surface->h };
+        SDL_RenderCopy(pImpl->renderer, texture, nullptr, &destRect);
+        
+        // 4. Clean up the texture
+        SDL_DestroyTexture(texture);
+    }
+    
+    // 5. Clean up the surface
+    SDL_FreeSurface(surface);
 }
