@@ -80,6 +80,7 @@ public:
     void clear(uint8_t r, uint8_t g, uint8_t b, uint8_t a = 255);
     void present();
     void setCamera(int x, int y);
+    void getCamera(int& camX, int& camY) const;
 
     void drawSprite(const Sprite& sprite, int x, int y, int scale = 1, bool flipX = false);
     void drawSpriteFrame(const SpriteSheet& sheet, int frameX, int frameY, int screenX, int screenY, int scale = 1, bool flipX = false);

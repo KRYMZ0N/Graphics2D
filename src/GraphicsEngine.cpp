@@ -107,6 +107,11 @@ void GraphicsEngine::setCamera(int x, int y) {
     pImpl->cameraY = y;
 }
 
+void GraphicsEngine::getCamera(int& camX, int& camY) const {
+    camX = pImpl->cameraX;
+    camY = pImpl->cameraY;
+}
+
 int GraphicsEngine::getWidth() const { return pImpl->windowWidth; }
 int GraphicsEngine::getHeight() const { return pImpl->windowHeight; }
 SDL_Renderer* GraphicsEngine::getRenderer() const { return pImpl->renderer; }
@@ -169,4 +174,27 @@ void GraphicsEngine::drawLine(int x1, int y1, int x2, int y2, uint8_t r, uint8_t
     int ry2 = isWorldSpace ? (y2 - pImpl->cameraY) : y2;
     SDL_SetRenderDrawColor(pImpl->renderer, r, g, b, a);
     SDL_RenderDrawLine(pImpl->renderer, rx1, ry1, rx2, ry2);
+}
+
+void GraphicsEngine::drawSpriteFrame(const SpriteSheet& sheet, int frameX, int frameY, int screenX, int screenY, int scale, bool flipX) {
+    if (!sheet.texture) return;
+
+    // 1. define the source rectangle on the sprite sheet grid
+    SDL_Rect srcRect = {
+        frameX * sheet.frameWidth,
+        frameY * sheet.frameHeight,
+        sheet.frameWidth,
+        sheet.frameHeight
+    };
+
+    // 2. Define the destination rectangle on the screen
+    SDL_Rect destRect = {
+        screenX - pImpl->cameraX,
+        screenY - pImpl->cameraY,
+        sheet.frameWidth * scale,
+        sheet.frameHeight * scale
+    };
+
+    // 3. Render the specific frame slice with optional horizontal flipping
+    SDL_RenderCopyEx(pImpl->renderer, sheet.texture, &srcRect, &destRect, 0.0, nullptr, flipX ? SDL_FLIP_HORIZONTAL : SDL_FLIP_NONE);
 }
