@@ -49,7 +49,12 @@ GraphicsEngine::GraphicsEngine(const std::string& title, int width, int height) 
     }
 
 
-    pImpl->window = SDL_CreateWindow(title.c_str(), SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, width, height, SDL_WINDOW_SHOWN);
+    pImpl->window = SDL_CreateWindow(title.c_str(),
+        SDL_WINDOWPOS_CENTERED,
+        SDL_WINDOWPOS_CENTERED,
+        width, height,
+        SDL_WINDOW_SHOWN | SDL_WINDOW_RESIZABLE
+    );
     if (!pImpl->window) {
         std::cerr << "\n[CRITICAL WINDOW ERROR] SDL_CreateWindow failed: " << SDL_GetError() << "\n";
         exit(1);
@@ -65,6 +70,13 @@ GraphicsEngine::GraphicsEngine(const std::string& title, int width, int height) 
         std::cerr << "\n[CRITICAL RENDERER ERROR] SDL_CreateRenderer failed: " << SDL_GetError() << "\n";
         exit(1);
     }
+
+    // --- 2. LOGICAL SCALING & NEAREST-NEIGHBOR PIXEL ART FILTERING ---
+    // Maintains 800x600 logical internal resolution regardless of window dimensions
+    SDL_RenderSetLogicalSize(pImpl->renderer, width, height);
+    
+    // Nearest-neighbor scaling ensures pixel graphics stay crisp when scaled up
+    SDL_SetHint(SDL_HINT_RENDER_SCALE_QUALITY, "0");
 }
 
 // 3. Clean up pImpl in the destructor
