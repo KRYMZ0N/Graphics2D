@@ -253,3 +253,21 @@ void GraphicsEngine::drawText(const std::string& text, int x, int y, uint8_t r, 
     // 5. Clean up the surface
     SDL_FreeSurface(surface);
 }
+
+void GraphicsEngine::drawSpriteRotated(const Sprite& sprite, int x, int y, int scale, double angle, bool flipX, bool isWorldSpace) {
+    if (!sprite.texture) return;
+
+    // Adjust for camera offset if in world space
+    int renderX = isWorldSpace ? (x - pImpl->cameraX) : x;
+    int renderY = isWorldSpace ? (y - pImpl->cameraY) : y;
+
+    SDL_Rect destRect = { renderX, renderY, sprite.width * scale, sprite.height * scale };
+
+    // Set rotation center (pivot point at the bottom center of the sprite, perfect for handles)
+    SDL_Point center = { (sprite.width * scale) / 2, sprite.height * scale };
+
+    SDL_RendererFlip flip = flipX ? SDL_FLIP_HORIZONTAL : SDL_FLIP_NONE;
+
+    // Render rotated using SDL_RenderCopyEx
+    SDL_RenderCopyEx(pImpl->renderer, sprite.texture, nullptr, &destRect, angle, &center, flip);
+}

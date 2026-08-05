@@ -84,6 +84,8 @@ public:
 
     void drawSprite(const Sprite& sprite, int x, int y, int scale = 1, bool flipX = false);
     void drawSpriteFrame(const SpriteSheet& sheet, int frameX, int frameY, int screenX, int screenY, int scale = 1, bool flipX = false);
+    // Add to GraphicsEngine class declaration in GraphicsLib.h:
+    void drawSpriteRotated(const Sprite& sprite, int x, int y, int scale, double angle, bool flipX = false, bool isWorldSpace = true);
 
     void drawRectangle(int x, int y, int w, int h, uint8_t r, uint8_t g, uint8_t b, uint8_t a = 255, bool isWorldSpace = true);
     void fillRectangle(int x, int y, int w, int h, uint8_t r, uint8_t g, uint8_t b, uint8_t a = 255, bool isWorldSpace = true);
