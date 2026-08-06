@@ -85,12 +85,19 @@ public:
     void drawSprite(const Sprite& sprite, int x, int y, int scale = 1, bool flipX = false);
     void drawSpriteFrame(const SpriteSheet& sheet, int frameX, int frameY, int screenX, int screenY, int scale = 1, bool flipX = false);
     // Add to GraphicsEngine class declaration in GraphicsLib.h:
-    void drawSpriteRotated(const Sprite& sprite, int x, int y, int scale, double angle, bool flipX = false, bool isWorldSpace = true);
+    void drawSpriteRotated(const Sprite& sprite, int x, int y, int scale, double angle, 
+                           int pivotX = -1, int pivotY = -1, bool flipX = false, bool isWorldSpace = true);
 
     void drawRectangle(int x, int y, int w, int h, uint8_t r, uint8_t g, uint8_t b, uint8_t a = 255, bool isWorldSpace = true);
     void fillRectangle(int x, int y, int w, int h, uint8_t r, uint8_t g, uint8_t b, uint8_t a = 255, bool isWorldSpace = true);
     void drawLine(int x1, int y1, int x2, int y2, uint8_t r, uint8_t g, uint8_t b, uint8_t a = 255, bool isWorldSpace = true);
     void drawText(const std::string& text, int x, int y, uint8_t r = 255, uint8_t g = 255, uint8_t b = 255);
+    
+    void setSpriteTint(const Sprite& sprite, uint8_t r, uint8_t g, uint8_t b);
+    void setSpriteAlpha(const Sprite& sprite, uint8_t alpha);
+    void resetSpriteTint(const Sprite& sprite);
+
+    void getTextDimensions(const std::string& text, int& outW, int& outH);
 
     int getWidth() const;
     int getHeight() const;

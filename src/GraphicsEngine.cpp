@@ -254,20 +254,51 @@ void GraphicsEngine::drawText(const std::string& text, int x, int y, uint8_t r, 
     SDL_FreeSurface(surface);
 }
 
-void GraphicsEngine::drawSpriteRotated(const Sprite& sprite, int x, int y, int scale, double angle, bool flipX, bool isWorldSpace) {
+void GraphicsEngine::drawSpriteRotated(const Sprite& sprite, int x, int y, int scale, double angle, 
+                                       int pivotX, int pivotY, bool flipX, bool isWorldSpace) {
     if (!sprite.texture) return;
 
-    // Adjust for camera offset if in world space
     int renderX = isWorldSpace ? (x - pImpl->cameraX) : x;
     int renderY = isWorldSpace ? (y - pImpl->cameraY) : y;
 
-    SDL_Rect destRect = { renderX, renderY, sprite.width * scale, sprite.height * scale };
+    int w = sprite.width * scale;
+    int h = sprite.height * scale;
 
-    // Set rotation center (pivot point at the bottom center of the sprite, perfect for handles)
-    SDL_Point center = { (sprite.width * scale) / 2, sprite.height * scale };
+    SDL_Rect destRect = { renderX, renderY, w, h };
+
+    // Default to center of sprite if pivot isn't specified
+    SDL_Point center;
+    center.x = (pivotX == -1) ? (w / 2) : (pivotX * scale);
+    center.y = (pivotY == -1) ? (h / 2) : (pivotY * scale);
 
     SDL_RendererFlip flip = flipX ? SDL_FLIP_HORIZONTAL : SDL_FLIP_NONE;
-
-    // Render rotated using SDL_RenderCopyEx
     SDL_RenderCopyEx(pImpl->renderer, sprite.texture, nullptr, &destRect, angle, &center, flip);
+}
+
+void GraphicsEngine::setSpriteTint(const Sprite& sprite, uint8_t r, uint8_t g, uint8_t b) {
+    if (sprite.texture) {
+        SDL_SetTextureColorMod(sprite.texture, r, g, b);
+    }
+}
+
+void GraphicsEngine::setSpriteAlpha(const Sprite& sprite, uint8_t alpha) {
+    if (sprite.texture) {
+        SDL_SetTextureBlendMode(sprite.texture, SDL_BLENDMODE_BLEND);
+        SDL_SetTextureAlphaMod(sprite.texture, alpha);
+    }
+}
+
+void GraphicsEngine::resetSpriteTint(const Sprite& sprite) {
+    if (sprite.texture) {
+        SDL_SetTextureColorMod(sprite.texture, 255, 255, 255);
+        SDL_SetTextureAlphaMod(sprite.texture, 255);
+    }
+}
+
+void GraphicsEngine::getTextDimensions(const std::string& text, int& outW, int& outH) {
+    outW = 0;
+    outH = 0;
+    if (pImpl->font && !text.empty()) {
+        TTF_SizeText(pImpl->font, text.c_str(), &outW, &outH);
+    }
 }
